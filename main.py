@@ -6,8 +6,7 @@ df = df.drop({'Lp', 'Data', 'Godzina', 'ID Sprzedawcy', 'Sprzedawca',
               'Wartość', 'Kupujący', 'Kategoria 1'
               }, axis=1)
 print('columns after drop:')
-for el in df.head():
-    print(el, end=' ')
+print(df.columns)
 
 df = df.rename(columns={"ID Aukcji (link)": "id", 'Aukcja': 'title', 'Rodzaj aukcji (KT/lic.)': 'auction_type',
                         'Stan': 'is_new', 'Sklep': 'is_shop', 'Strefa Marek': 'mark_zone',
@@ -17,5 +16,8 @@ df = df.rename(columns={"ID Aukcji (link)": "id", 'Aukcja': 'title', 'Rodzaj auk
                         })
 
 print('columns after rename:')
-for el in df.head():
-    print(el, end=' | ')
+print(df.columns)
+
+df.loc[df.is_new != 'nowy', 'is_new'] = 0
+df.loc[df.is_new == 'nowy', 'is_new'] = 1
+print(df.is_new.tail(20))
