@@ -20,4 +20,12 @@ print(df.columns)
 
 df.loc[df.is_new != 'nowy', 'is_new'] = 0
 df.loc[df.is_new == 'nowy', 'is_new'] = 1
-print(df.is_new.tail(20))
+
+df['category'] = df.loc[:,
+                 ['Kategoria 2', 'Kategoria 3', 'Kategoria 4', 'Kategoria 5', 'Kategoria 6', 'Kategoria 7',
+                  'Kategoria 8']].apply(
+    lambda x: '-'.join(x.dropna().astype(str)), axis=1
+
+)
+print(df.head())
+print(df.category.head())
