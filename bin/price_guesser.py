@@ -31,20 +31,19 @@ class PriceGuesser:
         df = df.drop({'Kategoria 2', 'Kategoria 3', 'Kategoria 4', 'Kategoria 5', 'Kategoria 6', 'Kategoria 7',
                       'Kategoria 8'
                       }, axis=1)
-
-        print(df.head(10))
-        print(df.columns)
-
-        writer_orig = pd.ExcelWriter('C:\\Users\\micha\\Desktop\\formatted.xls')
-        df.to_excel(writer_orig, index=False, sheet_name='report')
+        writer_orig = pd.ExcelWriter('test-data/antyki-prepared-data.xls')
+        df.to_excel(writer_orig, index=False, sheet_name='antyki')
         writer_orig.save()
 
+    def train(self):
+        df = pd.read_excel('test-data/antyki-prepared-data.xls', 'antyki')
         msk = np.random.rand(len(df)) < 0.8
         train = df[msk]
         test = df[~msk]
 
-        print(train.head())
-        print(train.info())
+        print(train.price.describe())
+        print(train.title.describe())
+        print(train.category.describe())
 
     @staticmethod
     def merge_categories(df):
