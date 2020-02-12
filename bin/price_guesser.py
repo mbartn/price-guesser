@@ -1,5 +1,7 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 
 class PriceGuesser:
@@ -35,8 +37,9 @@ class PriceGuesser:
         df.to_excel(writer_orig, index=False, sheet_name='antyki')
         writer_orig.save()
 
-    def train(self):
+    def describeData(self):
         df = pd.read_excel('test-data/antyki-prepared-data.xls', 'antyki')
+        print(df.columns)
         msk = np.random.rand(len(df)) < 0.8
         train = df[msk]
         test = df[~msk]
@@ -44,6 +47,26 @@ class PriceGuesser:
         print(train.price.describe())
         print(train.title.describe())
         print(train.category.describe())
+
+        print('There are',
+              train['category'].nunique(),
+              'unique values in category name column')
+        print(train['category'].value_counts()[:10])
+
+        sns.boxplot(x='is_new', y=np.log(train['price'] + 1), data=train,
+                    palette=sns.color_palette('RdBu', 5))
+
+        plt.subplot(1, 2, 1)
+        (train['price']).plot.hist(bins=50, figsize=(12, 6), edgecolor='white', range=[0, 250])
+        plt.xlabel('price', fontsize=12)
+        plt.title('Price Distribution', fontsize=12)
+        plt.show()
+
+        plt.subplot(1, 2, 2)
+        np.log(train['price'] + 1).plot.hist(bins=50, figsize=(12, 6), edgecolor='white')
+        plt.xlabel('log(price+1)', fontsize=12)
+        plt.title('Price Distribution', fontsize=12)
+        plt.show()
 
     @staticmethod
     def merge_categories(df):
