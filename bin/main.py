@@ -5,4 +5,5 @@ class Main:
     if __name__ == "__main__":
         price_guesser = PriceGuesser()
         # price_guesser.prepare_data()
-        price_guesser.describeData()
+        # price_guesser.describeData()
+        price_guesser.train()
