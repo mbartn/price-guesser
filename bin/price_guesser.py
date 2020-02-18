@@ -12,8 +12,6 @@ def binarize_title(df):
     pass
 
 
-
-
 class PriceGuesser:
 
     def prepare_data(self):
@@ -98,8 +96,13 @@ class PriceGuesser:
 
     def train(self):
         df = pd.read_excel('test-data/antyki-prepared-data.xls', 'antyki')
+        df = df.drop({'auction_type', 'is_new',
+                     'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion', 'pogrubienie_promotion',
+                     'podswietlenie_promotion', 'amount', 'category'}, axis=1)
+        print('columns after drop:')
         print(df.columns)
-        to_categorical(df)
+
+        print(df.columns)
         print(df.dtypes)
         NAME_MIN_DF = 10
         cv = CountVectorizer(min_df=NAME_MIN_DF)
