@@ -1,8 +1,17 @@
+import lightgbm as lgb
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy.sparse import csr_matrix, hstack
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import mean_squared_error
+
+
+def binarize_title(df):
+    pass
+
+
 
 
 class PriceGuesser:
@@ -91,21 +100,55 @@ class PriceGuesser:
         df = pd.read_excel('test-data/antyki-prepared-data.xls', 'antyki')
         print(df.columns)
         to_categorical(df)
+        print(df.dtypes)
+        NAME_MIN_DF = 10
+        cv = CountVectorizer(min_df=NAME_MIN_DF)
+        x_title = cv.fit_transform(df['title'])
+        X_dummies = csr_matrix(pd.get_dummies(df[['auction_type',
+                                                  'is_new', 'is_shop', 'mark_zone',
+                                                  'wyroznienie_promotion',
+                                                  'str_dzialu_promotion',
+                                                  'pogrubienie_promotion',
+                                                  'podswietlenie_promotion',
+                                                  'category']], sparse=True).values)
+        sparse_merge = hstack((X_dummies, x_title)).tocsr()
+
         msk = np.random.rand(len(df)) < 0.8
         train = df[msk]
         test = df[~msk]
         test_new = test.drop('price', axis=1)
-        y_test = np.log1p(test["price"])
+        # y_test = np.log1p(test["price"])
+        #
+        # nrow_train = train.shape[0]
+        # y = np.log1p(train["price"])
+        # merge: pd.DataFrame = pd.concat([train, test_new])
+        #
+        # cv = CountVectorizer(min_df=10)
+        # X_name = cv.fit_transform(merge['title'])
+        # cv = CountVectorizer()
+        # X_category = cv.fit_transform(merge['category'])
 
-        nrow_train = train.shape[0]
         y = np.log1p(train["price"])
-        merge: pd.DataFrame = pd.concat([train, test_new])
+        y_test = np.log1p(test["price"])
+        # train_X = lgb.Dataset(train, label=y)
+        train_X = lgb.Dataset(sparse_merge, label=y)
 
-        cv = CountVectorizer(min_df=10)
-        X_name = cv.fit_transform(merge['title'])
-        cv = CountVectorizer()
-        X_category = cv.fit_transform(merge['category'])
+        params = {
+            'learning_rate': 0.75,
+            'application': 'regression',
+            'max_depth': 3,
+            'num_leaves': 100,
+            'verbosity': -1,
+            'metric': 'RMSE',
+        }
 
+        print('training has started')
+        gbm = lgb.train(params, train_set=train_X, num_boost_round=3200, verbose_eval=100)
+        print('training has finished')
+
+        y_pred = gbm.predict(test, num_iteration=gbm.best_iteration)
+
+        print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
 
 
 def to_categorical(dataset):
