@@ -95,46 +95,37 @@ class PriceGuesser:
         print('The average price is {}'.format(round(price_from_shops.mean(), 2)), 'from sellers')
 
     def train(self):
-        df = pd.read_excel('test-data/antyki-prepared-data.xls', 'antyki')
-        df = df.drop({'auction_type', 'is_new',
-                     'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion', 'pogrubienie_promotion',
-                     'podswietlenie_promotion', 'amount', 'category'}, axis=1)
+        df = pd.read_excel('/home/michal/repo/price-guesser/test-data/antyki-prepared-data.xls', 'antyki')
+        df = df.drop({'id', 'auction_type', 'is_new',
+                      'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion', 'pogrubienie_promotion',
+                      'podswietlenie_promotion', 'amount', 'category'}, axis=1)
         print('columns after drop:')
         print(df.columns)
-
-        print(df.columns)
-        print(df.dtypes)
-        NAME_MIN_DF = 10
-        cv = CountVectorizer(min_df=NAME_MIN_DF)
-        x_title = cv.fit_transform(df['title'])
-        X_dummies = csr_matrix(pd.get_dummies(df[['auction_type',
-                                                  'is_new', 'is_shop', 'mark_zone',
-                                                  'wyroznienie_promotion',
-                                                  'str_dzialu_promotion',
-                                                  'pogrubienie_promotion',
-                                                  'podswietlenie_promotion',
-                                                  'category']], sparse=True).values)
-        sparse_merge = hstack((X_dummies, x_title)).tocsr()
 
         msk = np.random.rand(len(df)) < 0.8
         train = df[msk]
         test = df[~msk]
         test_new = test.drop('price', axis=1)
-        # y_test = np.log1p(test["price"])
-        #
-        # nrow_train = train.shape[0]
-        # y = np.log1p(train["price"])
-        # merge: pd.DataFrame = pd.concat([train, test_new])
-        #
-        # cv = CountVectorizer(min_df=10)
-        # X_name = cv.fit_transform(merge['title'])
-        # cv = CountVectorizer()
-        # X_category = cv.fit_transform(merge['category'])
-
-        y = np.log1p(train["price"])
         y_test = np.log1p(test["price"])
-        # train_X = lgb.Dataset(train, label=y)
-        train_X = lgb.Dataset(sparse_merge, label=y)
+
+        nrow_train = train.shape[0]
+        y = np.log1p(train["price"])
+        merge: pd.DataFrame = pd.concat([train, test_new])
+
+        NAME_MIN_DF = 10
+        cv = CountVectorizer(min_df=NAME_MIN_DF, dtype=np.float64)
+        x_title = cv.fit_transform(merge['title'])
+
+        # x_title_csr = hstack((x_title)).tocsr()
+        x_title_csr = x_title.tocsr()
+        print()
+
+        mask = np.array(np.clip(x_title_csr.getnnz(axis=0) - 1, 0, 1), dtype=bool)
+        x_title_csr = x_title_csr[:, mask]
+        X = x_title_csr[:nrow_train]
+        X_test = x_title_csr[nrow_train:]
+
+        train_X = lgb.Dataset(X, label=y)
 
         params = {
             'learning_rate': 0.75,
@@ -144,14 +135,12 @@ class PriceGuesser:
             'verbosity': -1,
             'metric': 'RMSE',
         }
-
-        print('training has started')
         gbm = lgb.train(params, train_set=train_X, num_boost_round=3200, verbose_eval=100)
-        print('training has finished')
 
-        y_pred = gbm.predict(test, num_iteration=gbm.best_iteration)
-
+        y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration)
         print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
+
+
 
 
 def to_categorical(dataset):
