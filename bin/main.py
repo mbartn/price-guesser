@@ -10,4 +10,4 @@ class Main:
         price_guesser = PriceGuesser()
         # price_guesser.prepare_data(path='/home/michal/repo/price-guesser/test-data/antyki.xls')
         # price_guesser.describe_data(path='/home/michal/repo/price-guesser/test-data/antyki.xls')
-        price_guesser.train()
+        price_guesser.train(sheet_name='Transakcje', path='/home/michal/repo/price-guesser/test-data/antyki.xls')
