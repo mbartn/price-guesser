@@ -1,3 +1,5 @@
+import os
+
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
@@ -8,7 +10,7 @@ from sklearn.metrics import mean_squared_error
 class PriceGuesser:
 
     @staticmethod
-    def train(self, sheet_name: str, path: str):
+    def train(sheet_name: str, path: str):
         df = pd.read_excel(path, sheet_name)
         df = df.drop({'id', 'auction_type', 'is_new',
                       'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion', 'pogrubienie_promotion',
@@ -50,6 +52,9 @@ class PriceGuesser:
 
         y_pred = gbm.predict(x_test, num_iteration=gbm.best_iteration)
         print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
+
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        gbm.save_model(dir_path + '/../model/model.txt')
 
 
 def to_categorical(dataset):
