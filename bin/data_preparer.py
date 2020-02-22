@@ -1,10 +1,13 @@
+import os
+
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
 
 class DataPreparer:
     @staticmethod
-    def prepare(self, path: str, sheet_name: str):
+    def prepare(path: str, sheet_name: str):
         data_frame = pd.read_excel(path, sheet_name)
 
         print('Dropping unnecessary columns...')
@@ -29,9 +32,17 @@ class DataPreparer:
         data_frame.loc[data_frame.is_new != 'nowy', 'is_new'] = 0
         data_frame.loc[data_frame.is_new == 'nowy', 'is_new'] = 1
 
-        self.__merge_categories(df=data_frame)
-        self.__save_to_file(path='/home/michal/repo/price-guesser/test-data/antyki-prepared-data.xls', df=data_frame,
-                            sheet_name=sheet_name)
+        DataPreparer.__merge_categories(df=data_frame)
+
+        msk = np.random.rand(len(data_frame)) < 0.8
+        train = data_frame[msk]
+        test = data_frame[~msk]
+
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        DataPreparer.__save_to_file(path=dir_path + '/../test-data/antyki-train.xls', df=train,
+                                    sheet_name=sheet_name)
+        DataPreparer.__save_to_file(path=dir_path + os.pardir + '/../test-data/antyki-test.xls', df=test,
+                                    sheet_name=sheet_name)
 
     @staticmethod
     def __merge_categories(df: DataFrame):
