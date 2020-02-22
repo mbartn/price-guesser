@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 
 
 class PriceGuesser:
+    cv = CountVectorizer(dtype=np.float64)
 
     @staticmethod
     def train(sheet_name: str, path: str):
@@ -26,11 +27,9 @@ class PriceGuesser:
 
         nrow_train = train.shape[0]
         y = np.log1p(train["price"])
-        merge: pd.DataFrame = pd.concat([train, test_new])
+        merge: pd.DataFrame = pd.concat([train, test_new], sort=True)
 
-        name_min_df = 10
-        cv = CountVectorizer(min_df=name_min_df, dtype=np.float64)
-        x_title = cv.fit_transform(merge['title'])
+        x_title = PriceGuesser.cv.fit_transform(merge['title'])
 
         x_title_csr = x_title.tocsr()
 
@@ -55,6 +54,14 @@ class PriceGuesser:
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         gbm.save_model(dir_path + '/../model/model.txt')
+
+    @staticmethod
+    def guess_price(title: str):
+        model = lgb.Booster(model_file=os.path.dirname(os.path.realpath(__file__)) + '/../model/model.txt')
+
+        x_title = PriceGuesser.cv.fit_transform([title]).tocsr()
+        y_pred = model.predict(x_title, num_iteration=model.best_iteration)
+        print(y_pred)
 
 
 def to_categorical(dataset):
