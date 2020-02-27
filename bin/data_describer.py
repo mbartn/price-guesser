@@ -1,14 +1,36 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+import sns as sns
 
 
 class DataDescriber:
-    @staticmethod
-    def describe_data(self, path: str, sheet_name: str):
-        df = pd.read_excel(path, sheet_name)
 
+    @staticmethod
+    def auction_type_price_plot(df):
+        price_where_buy_now = df.loc[df['auction_type'] == 'KT', 'price']
+        price_where_bidding = df.loc[df['auction_type'] == 'lic.', 'price']
+        fig, ax = plt.subplots(figsize=(18, 8))
+        ax.hist(np.log(price_where_buy_now + 1), color='#007D00', alpha=1.0, bins=50, range=[0, 10],
+                label='Price where buy now')
+        ax.hist(np.log(price_where_bidding + 1), color='#8CB4E1', alpha=0.7, bins=50, range=[0, 10],
+                label='Price where bidding')
+        plt.xlabel('ln(price)', fontsize=12)
+        plt.ylabel('Frequency', fontsize=12)
+        plt.title('Price Distribution by auction type', fontsize=15)
+        plt.tick_params(labelsize=12)
+        plt.legend()
+        plt.show()
+
+    @staticmethod
+    def describe_data():
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        df = pd.read_excel(dir_path + '/../test-data/antyki-train-full.xls', 'Transakcje')
+
+        DataDescriber.auction_type_price_plot(df)
         print(df.price.describe())
         print(df.title.describe())
         print(df.category.describe())
@@ -48,5 +70,5 @@ class DataDescriber:
         plt.legend()
         plt.show()
 
-        print('The average price is {}'.format(round(price_from_users.mean(), 2)), 'from users');
+        print('The average price is {}'.format(round(price_from_users.mean(), 2)), 'from users')
         print('The average price is {}'.format(round(price_from_shops.mean(), 2)), 'from sellers')
