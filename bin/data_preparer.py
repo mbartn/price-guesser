@@ -32,7 +32,7 @@ class DataPreparer:
         data_frame.loc[data_frame.is_new != 'nowy', 'is_new'] = 0
         data_frame.loc[data_frame.is_new == 'nowy', 'is_new'] = 1
 
-        DataPreparer.__merge_categories(df=data_frame)
+        data_frame = DataPreparer.__merge_categories(df=data_frame)
 
         msk = np.random.rand(len(data_frame)) < 0.8
         train = data_frame[msk]
@@ -55,6 +55,7 @@ class DataPreparer:
             {'Kategoria 2', 'Kategoria 3', 'Kategoria 4', 'Kategoria 5', 'Kategoria 6', 'Kategoria 7',
              'Kategoria 8'
              }, axis=1)
+        return df;
 
     @staticmethod
     def __save_to_file(df: DataFrame, path: str, sheet_name: str):

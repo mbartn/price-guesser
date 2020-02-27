@@ -3,7 +3,7 @@ import os
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import mean_squared_error
 
 
@@ -11,33 +11,41 @@ class PriceGuesser:
     cv = CountVectorizer(dtype=np.float64)
 
     @staticmethod
-    def train(sheet_name: str, path: str):
-        df = pd.read_excel(path, sheet_name)
-        df = df.drop({'id', 'auction_type', 'is_new',
-                      'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion', 'pogrubienie_promotion',
-                      'podswietlenie_promotion', 'amount', 'category'}, axis=1)
+    def train():
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        df_train = pd.read_excel(dir_path + '/../test-data/antyki-train.xls', 'Transakcje')
+        df_test = pd.read_excel(dir_path + '/../test-data/antyki-test.xls', 'Transakcje')
+        df_train = df_train.drop({'id', 'auction_type', 'is_new',
+                                  'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion',
+                                  'pogrubienie_promotion',
+                                  'podswietlenie_promotion', 'amount', 'category'}, axis=1)  # todo: remove me
+        df_test = df_test.drop({'id', 'auction_type', 'is_new',
+                                'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion',
+                                'pogrubienie_promotion',
+                                'podswietlenie_promotion', 'amount', 'category'}, axis=1)  # todo: remove me
+
         print('columns after drop:')
-        print(df.columns)
+        print(df_train.columns)
+        print(df_test.columns)
 
-        msk = np.random.rand(len(df)) < 0.8
-        train = df[msk]
-        test = df[~msk]
-        test_new = test.drop('price', axis=1)
-        y_test = np.log1p(test["price"])
+        y_train = df_train['price']
+        y_test = df_test['price']
 
-        nrow_train = train.shape[0]
-        y = np.log1p(train["price"])
-        merge: pd.DataFrame = pd.concat([train, test_new], sort=True)
+        x_train = df_train.drop('price', axis=1)
+        x_test = df_test.drop('price', axis=1)
 
-        x_title = PriceGuesser.cv.fit_transform(merge['title'])
+        y_test = np.log1p(y_test)
+        y_train = np.log1p(y_train)
 
-        x_title_csr = x_title.tocsr()
+        tfidf_vec = TfidfVectorizer(dtype=np.float32, sublinear_tf=True, use_idf=True, smooth_idf=True)
+        x_train_cv = tfidf_vec.fit_transform(x_train['title'])
+        x_test_cv = tfidf_vec.fit_transform(x_test['title'])
+        x_train['title'] = pd.DataFrame(x_train_cv.todense()).astype('float64')  # why todense()?
+        x_test['title'] = pd.DataFrame(x_test_cv.todense()).astype('float64')
+        print(x_train)
 
-        mask = np.array(np.clip(x_title_csr.getnnz(axis=0) - 1, 0, 1), dtype=bool)
-        x_title_csr = x_title_csr[:, mask]
-        x = x_title_csr[:nrow_train]
-        x_test = x_title_csr[nrow_train:]
-        train_x = lgb.Dataset(x, label=y)
+        lgb_train = lgb.Dataset(x_train, y_train)
+        lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
 
         params = {
             'learning_rate': 0.75,
@@ -47,13 +55,30 @@ class PriceGuesser:
             'verbosity': -1,
             'metric': 'RMSE',
         }
-        gbm = lgb.train(params, train_set=train_x, num_boost_round=3200, verbose_eval=100)
 
+        print('training started')
+        gbm = lgb.train(params,
+                        lgb_train, num_boost_round=3200, verbose_eval=100)
         y_pred = gbm.predict(x_test, num_iteration=gbm.best_iteration)
+
         print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
 
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        gbm.save_model(dir_path + '/../model/model.txt')
+    # x_title_csr = x_title.tocsr()
+    #
+    # mask = np.array(np.clip(x_title_csr.getnnz(axis=0) - 1, 0, 1), dtype=bool)
+    # x_title_csr = x_title_csr[:, mask]
+    # x = x_title_csr[:nrow_train]
+    # x_test = x_title_csr[nrow_train:]
+    # train_x = lgb.Dataset(x, label=y)
+    #
+
+    # gbm = lgb.train(params, train_set=train_x, num_boost_round=3200, verbose_eval=100)
+    #
+    # y_pred = gbm.predict(x_test, num_iteration=gbm.best_iteration)
+    # print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
+    #
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # gbm.save_model(dir_path + '/../model/model.txt')
 
     @staticmethod
     def guess_price(title: str):
