@@ -15,11 +15,11 @@ class PriceGuesser:
         dir_path = os.path.dirname(os.path.realpath(__file__))
         df_train = pd.read_excel(dir_path + '/../test-data/antyki-train.xls', 'Transakcje')
         df_test = pd.read_excel(dir_path + '/../test-data/antyki-test.xls', 'Transakcje')
-        df_train = df_train.drop({'id', 'auction_type', 'is_new',
+        df_train = df_train.drop({'id', 'is_new',
                                   'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion',
                                   'pogrubienie_promotion',
                                   'podswietlenie_promotion', 'amount', 'category'}, axis=1)  # todo: remove me
-        df_test = df_test.drop({'id', 'auction_type', 'is_new',
+        df_test = df_test.drop({'id', 'is_new',
                                 'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion',
                                 'pogrubienie_promotion',
                                 'podswietlenie_promotion', 'amount', 'category'}, axis=1)  # todo: remove me
@@ -40,9 +40,11 @@ class PriceGuesser:
         tfidf_vec = TfidfVectorizer(dtype=np.float32, sublinear_tf=True, use_idf=True, smooth_idf=True)
         x_train_cv = tfidf_vec.fit_transform(x_train['title'])
         x_test_cv = tfidf_vec.fit_transform(x_test['title'])
+        x_train['auction_type'] = x_train['auction_type'].astype('category')
+        x_test['auction_type'] = x_test['auction_type'].astype('category')
+
         x_train['title'] = pd.DataFrame(x_train_cv.todense()).astype('float64')  # why todense()?
         x_test['title'] = pd.DataFrame(x_test_cv.todense()).astype('float64')
-        print(x_train)
 
         lgb_train = lgb.Dataset(x_train, y_train)
         lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
