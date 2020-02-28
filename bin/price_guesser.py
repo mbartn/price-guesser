@@ -15,11 +15,8 @@ class PriceGuesser:
     def train():
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        df = pd.read_excel(dir_path + '/../test-data/antyki-prepared-min.xls', 'Transakcje')
-        df = df.drop({'id', 'is_new',
-                      'is_shop', 'mark_zone', 'wyroznienie_promotion', 'str_dzialu_promotion',
-                      'pogrubienie_promotion',
-                      'podswietlenie_promotion', 'amount', 'category'}, axis=1)  # todo: remove me
+        df = pd.read_excel(dir_path + '/../test-data/antyki-prepared-full.xls', 'Transakcje')
+        df = df.drop({'id', 'amount'}, axis=1)  # todo: remove me
 
         print('columns after drop:')
         print(df.columns)
@@ -29,8 +26,8 @@ class PriceGuesser:
         y = np.log1p(y)
         tfidf_vec = TfidfVectorizer(dtype=np.float32, sublinear_tf=True, use_idf=True, smooth_idf=True)
         x_cv = tfidf_vec.fit_transform(x['title'])
-        x['auction_type'] = x['auction_type'].astype('category')
         x['title'] = pd.DataFrame(x_cv.todense()).astype('float64')  # why todense()?
+        PriceGuesser.to_categorical(x)
 
         x_train, x_test = train_test_split(x, test_size=0.2)
         y_train, y_test = train_test_split(y, test_size=0.2)
@@ -62,14 +59,14 @@ class PriceGuesser:
         y_pred = model.predict(x_title, num_iteration=model.best_iteration)
         print(y_pred)
 
-
-def to_categorical(dataset):
-    dataset['auction_type'] = dataset['auction_type'].astype('category')
-    dataset['is_new'] = dataset['is_new'].astype('category')
-    dataset['is_shop'] = dataset['is_shop'].astype('category')
-    dataset['mark_zone'] = dataset['mark_zone'].astype('category')
-    dataset['wyroznienie_promotion'] = dataset['wyroznienie_promotion'].astype('category')
-    dataset['str_dzialu_promotion'] = dataset['str_dzialu_promotion'].astype('category')
-    dataset['pogrubienie_promotion'] = dataset['pogrubienie_promotion'].astype('category')
-    dataset['podswietlenie_promotion'] = dataset['podswietlenie_promotion'].astype('category')
-    dataset['category'] = dataset['category'].astype('category')
+    @staticmethod
+    def to_categorical(dataset):
+        dataset['auction_type'] = dataset['auction_type'].astype('category')
+        dataset['is_new'] = dataset['is_new'].astype('category')
+        dataset['is_shop'] = dataset['is_shop'].astype('category')
+        dataset['mark_zone'] = dataset['mark_zone'].astype('category')
+        dataset['wyroznienie_promotion'] = dataset['wyroznienie_promotion'].astype('category')
+        dataset['str_dzialu_promotion'] = dataset['str_dzialu_promotion'].astype('category')
+        dataset['pogrubienie_promotion'] = dataset['pogrubienie_promotion'].astype('category')
+        dataset['podswietlenie_promotion'] = dataset['podswietlenie_promotion'].astype('category')
+        dataset['category'] = dataset['category'].astype('category')
