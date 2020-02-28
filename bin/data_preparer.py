@@ -39,10 +39,12 @@ class DataPreparer:
         test = data_frame[~msk]
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        DataPreparer.__save_to_file(path=dir_path + '/../test-data/antyki-train.xls', df=train,
+        DataPreparer.__save_to_file(path=dir_path + '/../test-data/antyki-prepared-full.xls', df=train,
                                     sheet_name=sheet_name)
-        DataPreparer.__save_to_file(path=dir_path + os.pardir + '/../test-data/antyki-test.xls', df=test,
-                                    sheet_name=sheet_name)
+        # DataPreparer.__save_to_file(path=dir_path + '/../test-data/antyki-train.xls', df=train,
+        #                             sheet_name=sheet_name)
+        # DataPreparer.__save_to_file(path=dir_path + os.pardir + '/../test-data/antyki-test.xls', df=test,
+        #                             sheet_name=sheet_name)
 
     @staticmethod
     def __merge_categories(df: DataFrame):
@@ -55,7 +57,7 @@ class DataPreparer:
             {'Kategoria 2', 'Kategoria 3', 'Kategoria 4', 'Kategoria 5', 'Kategoria 6', 'Kategoria 7',
              'Kategoria 8'
              }, axis=1)
-        return df;
+        return df
 
     @staticmethod
     def __save_to_file(df: DataFrame, path: str, sheet_name: str):
