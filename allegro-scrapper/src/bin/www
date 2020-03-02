@@ -4,8 +4,8 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('scrapper-node:server');
+var app = require('../../app');
+var debug = require('debug')('allegro-scrapper:server');
 var http = require('http');
 
 /**
