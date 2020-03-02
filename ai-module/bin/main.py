@@ -9,7 +9,7 @@ class Main:
     if __name__ == "__main__":
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        DataDescriber.describe_data()
+        # DataDescriber.describe_data()
 
         # data_preparer = DataPreparer()
         # data_preparer.prepare(sheet_name='Transakcje', path=dir_path + '/../test-data/antyki.xls')
