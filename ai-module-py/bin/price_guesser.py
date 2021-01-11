@@ -70,3 +70,20 @@ class PriceGuesser:
         dataset['pogrubienie_promotion'] = dataset['pogrubienie_promotion'].astype('category')
         dataset['podswietlenie_promotion'] = dataset['podswietlenie_promotion'].astype('category')
         dataset['category'] = dataset['category'].astype('category')
+
+
+# data class AllegroAuction(
+#     @BsonId
+#     val id: Long, // id of the auction on Allegro
+#     val title: String,
+#     val auctionType: AuctionType,
+#     val isNew: Boolean,
+#     val price: String,
+#     val alreadySold: Int,
+#     val isCompany: Boolean,
+#     val isMarkZone: Boolean, // Strefa marek
+#     val isFeaturePromotion: Boolean, // Wyróżnienie
+#     val isBoldPromotion: Boolean, // Pogrubienie
+#     val isHighlightPromotion: Boolean // Podświetlenie
+#     //val isStronaDzialuPromotion: Boolean, // these auctions are visible also on allegro.pl/promowane
+# )

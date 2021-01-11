@@ -16,5 +16,21 @@ class Main:
 
         price_guesser = PriceGuesser()
         # price_guesser.describe_data(path='/home/michal/repo/price-guesser/test-data/antyki.xls')
-        price_guesser.train()
-        # price_guesser.guess_price('1990 rower z prl')
+        #        price_guesser.train()
+        price_guesser.guess_price('1990 rower z prl')
+
+# data class AllegroAuction(
+#     @BsonId
+#     val id: Long, // id of the auction on Allegro
+#     val title: String,
+#     val auctionType: AuctionType,
+#     val isNew: Boolean,
+#     val price: String,
+#     val alreadySold: Int,
+#     val isCompany: Boolean,
+#     val isMarkZone: Boolean, // Strefa marek
+#     val isFeaturePromotion: Boolean, // Wyróżnienie
+#     val isBoldPromotion: Boolean, // Pogrubienie
+#     val isHighlightPromotion: Boolean // Podświetlenie
+#     //val isStronaDzialuPromotion: Boolean, // these auctions are visible also on allegro.pl/promowane
+# )

@@ -1,6 +1,5 @@
-import os
-
 import numpy as np
+import os
 import pandas as pd
 from pandas import DataFrame
 
@@ -11,9 +10,9 @@ class DataPreparer:
         data_frame = pd.read_excel(path, sheet_name)
 
         print('Dropping unnecessary columns...')
-        data_frame = data_frame.drop({'Lp', 'Data', 'Godzina', 'ID Sprzedawcy', 'Sprzedawca',
-                                      'Miasto', 'Kod EAN', 'Do wyczer. zapas.',
-                                      'Wartość', 'Kupujący', 'Kategoria 1'
+            data_frame = data_frame.drop({'Lp', 'Data', 'Godzina', 'ID Sprzedawcy', 'Sprzedawca',
+                                          'Miasto', 'Kod EAN', 'Do wyczer. zapas.',
+                                          'Wartość', 'Kupujący', 'Kategoria 1'
                                       }, axis=1)
         print('columns left: ')
         print(data_frame.columns)

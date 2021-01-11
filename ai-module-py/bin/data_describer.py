@@ -9,6 +9,7 @@ class DataDescriber:
 
     @staticmethod
     def draw_parameter_impact_plot(df):
+
         price_where_buy_now = df.loc[df['auction_type'] == 'KT', 'price']
         price_where_bidding = df.loc[df['auction_type'] == 'lic.', 'price']
         fig, ax = plt.subplots(figsize=(18, 8))
